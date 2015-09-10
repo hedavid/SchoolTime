@@ -76,6 +76,7 @@ struct appearanceInfo {
 	
 };
 struct appearanceInfo aInfo;
+//Number of classes
 struct classNames cNames[8];
 
 struct periodInfo {
@@ -84,7 +85,6 @@ struct periodInfo {
 	int end;
 };
 
-//Don't mess with anything above here. 
 
 
 
@@ -637,6 +637,7 @@ void readConfig() {
 	if(persist_exists(35)){
         persist_read_data(35,cNames,sizeof(cNames));
     }else{
+		//change the x<8 to however many classes you have. 
 		for(int x = 0;x<8;x++){
 		char temp[40];
 		snprintf(temp,sizeof(temp),"Period %d",x+1);
