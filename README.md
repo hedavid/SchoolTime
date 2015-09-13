@@ -12,6 +12,6 @@ To modify SchoolTime to work with your school, simply import SchoolTime into clo
 
 Your version of SchoolTime can be shared privately across pebble owners who follow your school time, but can not be published publicly on the pebble app store or any other public site. 
 
-Please do not modify the SchoolTime configuration page or use it with any other public pebble apps. 
+Modified versions of the configuration page are only able to be used for personal use. 
 
 If the build fails inside of cloudpebble, try re-importing the resources by downloading the SchoolTime ZIP and saving the resources back into cloudpebble manually. 
