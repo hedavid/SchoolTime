@@ -618,6 +618,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
 void readConfig() {
 	if(persist_exists(34)){
 		persist_read_data(34,&aInfo,sizeof(aInfo));
+		updateSchoolMode();
 	}else{
 		aInfo.bluetooth = YES;
 		aInfo.battery = YES;
