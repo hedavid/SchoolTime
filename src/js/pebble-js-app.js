@@ -20,8 +20,9 @@ Pebble.addEventListener("ready",
 Pebble.addEventListener("showConfiguration",
   function(e) {
 	  var urlString;
-    	urlString= 'http://ben624.com/SchoolTime/Classic/stcolor.html?';	
-	  
+    	//urlString= 'http://ben624.com/SchoolTime/V5/classic.html?';	
+	      	urlString= 'http://ben624.com/SchoolTime/V5/config.html?';	
+
 	  
 	for ( var i = 1 ; i <= 8  ; i++) {
 		var nameVar = 'class'+i+'Name';
@@ -30,19 +31,19 @@ Pebble.addEventListener("showConfiguration",
         urlString += '&' + nameVar  + '=' + nameVal;
     } 
 		urlString += '&sday=' + window.localStorage.getItem('sday');
-	    urlString += '&wmode=' + window.localStorage.getItem('wmode');
-	  	urlString += '&tcolorc=' + window.localStorage.getItem('tcolorc');
-	    urlString += '&blue=' + window.localStorage.getItem('blue');
-	    urlString += '&bluea=' + window.localStorage.getItem('bluea');
-	    urlString += '&bat=' + window.localStorage.getItem('bat');
-	    urlString += '&dcolor=' + window.localStorage.getItem('dcolor');
-	    urlString += '&lcolor=' + window.localStorage.getItem('lcolor');
-	    urlString += '&tcolor=' + window.localStorage.getItem('tcolor');
-	    urlString += '&batcolor=' + window.localStorage.getItem('batcolor');
-	    urlString += '&bluecolor=' + window.localStorage.getItem('bluecolor');
-	    urlString += '&backcolor=' + window.localStorage.getItem('backcolor');
-	    urlString += '&periodcolor=' + window.localStorage.getItem('periodcolor');
-	    urlString += '&breakmode=' + window.localStorage.getItem('breakmode');
+	  urlString += '&wmode=' + window.localStorage.getItem('wmode');
+	  urlString += '&tcolorc=' + window.localStorage.getItem('tcolorc');
+	  urlString += '&blue=' + window.localStorage.getItem('blue');
+	  urlString += '&bluea=' + window.localStorage.getItem('bluea');
+	  urlString += '&bat=' + window.localStorage.getItem('bat');
+	  urlString += '&dcolor=' + window.localStorage.getItem('dcolor');
+	  urlString += '&lcolor=' + window.localStorage.getItem('lcolor');
+	  urlString += '&tcolor=' + window.localStorage.getItem('tcolor');
+	  urlString += '&batcolor=' + window.localStorage.getItem('batcolor');
+	  urlString += '&bluecolor=' + window.localStorage.getItem('bluecolor');
+	  urlString += '&backcolor=' + window.localStorage.getItem('backcolor');
+	  urlString += '&periodcolor=' + window.localStorage.getItem('periodcolor');
+	  urlString += '&breakmode=' + window.localStorage.getItem('breakmode');
 
      
 	console.log("URL OPENING IS...")

@@ -9,10 +9,12 @@ THIS APPLICATION CAN BE SHARED ACROSS PEBBLE OWNERS, BUT CAN NOT BE PUBLISHED PU
 Permission to use, copy, or modify, this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 */
 
-
 #include "pebble.h"
 #include "colors.h"
-	
+#include "animations.h"
+#include "schedules.h"
+#include "ui.h"
+
 #define SUNDAY    0
 #define MONDAY    1
 #define TUESDAY   2
@@ -24,215 +26,39 @@ Permission to use, copy, or modify, this software for any purpose with or withou
 #define SECONDS	  1
 #define NO		  0
 #define YES		  1
-#define WHITE	  0
-#define BLACK	  1
 #define DISABLE	  2
 #define NORMAL	  0
 #define RELEASE	  1
 #define DELAY	  2
 #define TIME(h,s) ((h*60) + s)
 	
+//static Layer *s_layer;
+int seconds =0;
+
 void handle_battery_change(BatteryChargeState b);
 void handle_bluetooth_change(bool isconnected);
 void readConfig();
 void applyConfig(bool callTimerTick);
 
+
 bool firstrun = true;
 bool canPlay = true;
-Window *window;
-TextLayer *text_date_layer;
-TextLayer *text_day_layer;
-TextLayer *text_time_layer;
-TextLayer *text_time_period_info;
-TextLayer *text_battery_info;
-TextLayer *text_bluetooth_info;
-static GBitmap *bluetooth_on_bitmap;
-static BitmapLayer *bluetooth_on_layer;
-
-Layer *top_line_layer;
-Layer *bottom_line_layer;
 
 struct classNames {
 	char className[20];
 
 };
-struct appearanceInfo {
-	
-	int schoolDay;
-	int clockStyle;
-	int textColor;
-	int bluetooth;
-	int alarm;
-	int battery;
-	int alarmRung;
-	int break_mode;
-	char dateColor[10];
-	char lineColor[10];
-	char timeColor[10];
-	char batColor[10];
-	char blueColor[10];
-	char backColor[10];
-	char periodColor[10];
-	
-};
-struct appearanceInfo aInfo;
+
 //Number of classes
 struct classNames cNames[8];
-
-struct periodInfo {
-	int period;
-	int start;
-	int end;
-};
-
-
-
-
-/*
-
-Enter the times for the normal bell schedule below.
-
-The structs below are in the following format. 
-{period number, START TIME(HOURS,MINUTES), END TIME(HOURS,MINUTES)}
-**NOTE THAT THE TIMES ARE IN 24HR
-**Period Names are set in the app configuration page. 
-*/
-struct periodInfo normalInfo[] = { 
-    {1, TIME(7,45),  TIME(8,30)},
-	{2, TIME(8,35),  TIME(9,20)},
-	{3, TIME(9,25),  TIME(10,10)},
-	{4, TIME(10,15),  TIME(11,05)},
-	{5, TIME(11,10),  TIME(12,00)},
-	{6, TIME(12,05),  TIME(12,50)},
-	{7, TIME(12,55), TIME(13,40)},
-	{8, TIME(13,45), TIME(14,30)}
-};
-#define INFO_SIZE (sizeof(normalInfo)/sizeof(struct periodInfo))
-	
-
-#define NORMAL_START TIME(7,45)//Enter Normal Day Start Time
-#define NORMAL_END   TIME(14,30)//Enter Normal Day End Time
-
-	
-//The Delay info and early release info follow the same format as what was stated above. 
-//If your school does  not have either delay or early release, just leave it alone and don't select it in the config page. 
-struct periodInfo delayInfo[] = { 
-	{1, TIME(9,45),  TIME(10,15)},
-	{2, TIME(10,20),  TIME(10,50)},
-	{3, TIME(10,55),  TIME(11,30)},
-	{5, TIME(11,35),  TIME(12,10)},
-	{4, TIME(12,15),  TIME(12,45)},
-	{6, TIME(12,50),  TIME(13,20)},
-	{7, TIME(13,25), TIME(13,55)},
-	{8, TIME(14,00), TIME(14,30)}
-};
-#define DELAY_START  TIME(9,45)//Enter Delay Day Start Time
-#define DELAY_END    TIME(14,30) //Enter Delay Day Start Time
-
-struct periodInfo earlyRelInfo[] = {
-	{1, TIME(7,45),  TIME(8,10)},
-	{2, TIME(8,15),  TIME(8,40)},
-	{3, TIME(8,45),  TIME(9,10)},
-	{4, TIME(9,15),  TIME(9,40)},
-	{6, TIME(9,45),  TIME(10,10)},
-	{7, TIME(10,15),  TIME(10,40)},
-	{8, TIME(10,45), TIME(11,10)},
-	{5, TIME(11,15), TIME(11,50)}
-};
-#define EARLY_REL_START TIME(7,45) //Enter Early Release Day Start Time
-#define EARLY_REL_END   TIME(11,50) //Enter Early Release Day Start Time
-
-struct periodInfo *pinfo = normalInfo;
-static int school_start = NORMAL_START;
-static int school_end   = NORMAL_END;
-
-
-
-
-
-//Animation(Boot Animation) Stopped Handler 
-void on_animation_stopped(Animation *anim, bool finished, void *context)
-{
-    property_animation_destroy((PropertyAnimation*) anim);
-}
-void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int delay)
-{
-    	PropertyAnimation *anim = property_animation_create_layer_frame(layer, start, finish);
-     
-    	animation_set_duration((Animation*) anim, duration);
-    	animation_set_delay((Animation*) anim, delay);
-     
-		AnimationHandlers handlers = {
-        .stopped = (AnimationStoppedHandler) on_animation_stopped
-        };
-    	animation_set_handlers((Animation*) anim, handlers, NULL);
-     
-    	animation_schedule((Animation*) anim);
-	
-}
-
-//Top line across screen below date. 
-void top_line_layer_update_callback(Layer *layer, GContext* ctx) {
-	#ifdef PBL_COLOR
-	graphics_context_set_fill_color(ctx, GColorFromHEX(findColor(aInfo.lineColor)));	
-	#else
-    if(aInfo.textColor == WHITE) graphics_context_set_fill_color(ctx, GColorWhite);
-	else graphics_context_set_fill_color(ctx, GColorBlack);
-	#endif
-	graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
-}
-//Bottom line across screen below time.
-void bottom_line_layer_update_callback(Layer *layer, GContext* ctx) {
-	#ifdef PBL_COLOR
-	graphics_context_set_fill_color(ctx, GColorFromHEX(findColor(aInfo.lineColor)));	
-	#else
-	if(aInfo.textColor == WHITE) graphics_context_set_fill_color(ctx, GColorWhite);
-	else graphics_context_set_fill_color(ctx, GColorBlack);
-	#endif
-    graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
-}
-//Boot animation... change this to change the boot animation. 
-void boot_animation(){
-	GRect dayStart  = GRect(350, 34, 144 - 6, 30);
-	GRect dayFinish = GRect(2, 34, 144 - 6, 30);
-    animate_layer(text_layer_get_layer(text_day_layer), &dayStart, &dayFinish, 1600, 20);
-	GRect dateStart =  GRect(350, 54, 144 - 6, 30);
-	GRect dateFinish = GRect(2, 54, 144 - 6, 30);
-    animate_layer(text_layer_get_layer(text_date_layer), &dateStart, &dateFinish, 1600, 10);
-	
-	GRect clockStart = GRect(-200,70, 144 - 7, 55);
-	GRect clockFinish =GRect(2, 70, 144 - 7, 55);
-    animate_layer(text_layer_get_layer(text_time_layer), &clockStart, &clockFinish, 1600,20);
-	
-	GRect periodStart = GRect(2, 300, 144 - 7, 90);
-	GRect periodFinish =GRect(2, 108, 144 - 7, 90);
-    animate_layer(text_layer_get_layer(text_time_period_info), &periodStart, &periodFinish, 1400, 10);
-	
-	GRect topLineStart = GRect(200, 76, 180, 2);
-	GRect topLineFinish =GRect(0, 76, 180, 2);
-    animate_layer(top_line_layer, &topLineStart, &topLineFinish, 1400, 10);
-	
-	GRect bottomLineStart = GRect(-200, 108, 180, 2);
-	GRect bottomLineFinish =GRect(0, 108, 180, 2);
-    animate_layer(bottom_line_layer, &bottomLineStart, &bottomLineFinish, 1400, 10);
-	
-	GRect bluetoothStart = GRect(-10, -100, 48, 48);
-	GRect bluetoothFinish =GRect(-10, -10, 48, 48);
-    animate_layer(bitmap_layer_get_layer(bluetooth_on_layer), &bluetoothStart, &bluetoothFinish, 1400, 10);
-	
-	
-	GRect batteryStart = GRect(70, -100, 144 - 7, 90);
-	GRect batteryFinish =GRect(70, 0, 144 - 7, 90);
-    animate_layer(text_layer_get_layer(text_battery_info), &batteryStart, &batteryFinish, 1400, 10);
-}
-
 
 
 //Tick handler... Don't mess with this unless you know what to do :) 
 
 void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-	if (firstrun) {
-		firstrun = false;
+
+	  if (firstrun) {
+	  	firstrun = false;
 		}
 	static char outline[81];
 	static bool between_classes = false;
@@ -246,7 +72,19 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 
 	int hours = tick_time->tm_hour;
 	int minutes = tick_time->tm_min;
-	int seconds = tick_time->tm_sec;
+	seconds = tick_time->tm_sec;
+  #ifdef PBL_ROUND
+    if(aInfo.clockStyle == SECONDS){
+		   APP_LOG(APP_LOG_LEVEL_INFO, "HERE S");
+      layer_set_hidden(s_layer, false);
+      layer_mark_dirty(s_layer);
+
+  }
+  else if(aInfo.clockStyle == MINUTES){ 
+    APP_LOG(APP_LOG_LEVEL_INFO, "HERE");
+    layer_set_hidden(s_layer, true);
+  }
+  #endif
 	int day = tick_time->tm_wday;
 	int now = (hours * 60) + minutes + 1;
 	if (clock_is_24h_style()) {
@@ -282,7 +120,6 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 
 	if (between_classes) {
 		if(canPlay){
-//		start_animate_next_class_countdown();
 		canPlay = false; 
 		}
 		if ( next_class_at < now) {
@@ -293,7 +130,6 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 		snprintf(outline, 80, "Next Class In:\n%d Minutes",next_class_at - now);
 		else
 		snprintf(outline, 80, "Next Class In:\n%02d:%02d",next_class_at - now,60-seconds);
-//60-seconds
 		text_layer_set_text(text_time_period_info, outline);
 
 		if (now == next_class_at){
@@ -365,6 +201,7 @@ VibePattern pat = {
   .num_segments = ARRAY_LENGTH(segments),
 };
 
+
 //Bluetooth handler. There shouldn't be a need to mess with this. 
 void handle_bluetooth_change(bool isconnected){
 
@@ -428,19 +265,41 @@ void handle_bluetooth_change(bool isconnected){
 	layer_set_hidden(bitmap_layer_get_layer(bluetooth_on_layer), true);
 	else
 	layer_set_hidden(bitmap_layer_get_layer(bluetooth_on_layer), false);
+	#ifdef PBL_ROUND
+	if(aInfo.bluetooth == YES){
+			layer_set_frame(text_layer_get_layer(text_battery_info), GRect(18, 14, 180, 180));
+	}else{
+			layer_set_frame(text_layer_get_layer(text_battery_info), GRect(0, 14, 180, 180));
+	}
+	#endif
 
 }
 
 //Battery handler. There shouldn't be a need to mess with this. 
-
 void handle_battery_change(BatteryChargeState b) {
     static char outline[40];
-       if(b.is_charging)
+       if(b.is_charging){
+ #ifdef PBL_RECT
         text_layer_set_text(text_battery_info, "       Charging");
-     else if(b.charge_percent == 100)
+       #elif PBL_ROUND
+        text_layer_set_text(text_battery_info, "Charging");
+         #endif 
+       } else if(b.charge_percent == 100){
+       #ifdef PBL_RECT
         text_layer_set_text(text_battery_info, "        Charged");
+       #elif PBL_ROUND
+        text_layer_set_text(text_battery_info, "Charged");
+         #endif
+     }
 	   else{
+       #ifdef PBL_RECT
 	    snprintf(outline,sizeof(outline),"               %d%% ",b.charge_percent);
+       #elif PBL_ROUND
+		   if(aInfo.bluetooth == NO)
+        snprintf(outline,sizeof(outline),"%d%% ",b.charge_percent);
+		   else
+	    snprintf(outline,sizeof(outline),"       %d%% ",b.charge_percent);
+         #endif
 		text_layer_set_text(text_battery_info,outline);
 
 	}
@@ -489,12 +348,12 @@ void updateColors(){
 	#endif
 	text_layer_set_background_color(text_date_layer, GColorClear);
 	text_layer_set_background_color(text_day_layer, GColorClear);
-    text_layer_set_background_color(text_time_layer, GColorClear);
+  text_layer_set_background_color(text_time_layer, GColorClear);
 	text_layer_set_background_color(text_time_period_info, GColorClear);
-    text_layer_set_background_color(text_bluetooth_info, GColorClear);
-    text_layer_set_background_color(text_battery_info, GColorClear);
+  text_layer_set_background_color(text_bluetooth_info, GColorClear);
+  text_layer_set_background_color(text_battery_info, GColorClear);
 	layer_set_update_proc(top_line_layer, top_line_layer_update_callback);
-    layer_set_update_proc(bottom_line_layer, bottom_line_layer_update_callback);
+  layer_set_update_proc(bottom_line_layer, bottom_line_layer_update_callback);
 }
 
 void updateBatBlue(){
@@ -520,11 +379,14 @@ text_layer_set_font(text_time_period_info,
     fonts_load_custom_font(
     resource_get_handle(
     RESOURCE_ID_FONT_ROBOTO_CONDENSED_SUBSET_17)));	
+
 }else{
+  #ifdef PBL_RECT
 	text_layer_set_font(text_time_period_info,
     fonts_load_custom_font(
     resource_get_handle(
     RESOURCE_ID_FONT_ROBOTO_CONDENSED_REGULAR_SUBSET_22)));	
+  #endif
 }
 }
 
@@ -534,21 +396,28 @@ void updateSchoolMode(){
 			pinfo        = normalInfo;
 			school_start = NORMAL_START;
 	 		school_end   = NORMAL_END;
+      			APP_LOG(APP_LOG_LEVEL_ERROR, "NORMAL");
+
 			break;
 		case DELAY:
 			pinfo        = delayInfo;
 			school_start = DELAY_START;
 	 		school_end   = DELAY_END;	
+      			APP_LOG(APP_LOG_LEVEL_ERROR, "DELAYr");
+
 			break;
 		case RELEASE:
 			pinfo = earlyRelInfo;
 			school_start = EARLY_REL_START;
 			school_end = EARLY_REL_END;
+      			APP_LOG(APP_LOG_LEVEL_ERROR, "RELEASE");
+
 			break;
 		default:
 			APP_LOG(APP_LOG_LEVEL_ERROR, "MODE Error");
 			break;
 	}
+
 	
 }
 
@@ -582,6 +451,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
        else if(sDay->value->cstring[0] == 'e') aInfo.schoolDay = 1;
 	   else aInfo.schoolDay = 2;
 	 
+		   APP_LOG(APP_LOG_LEVEL_INFO,"WATCH MODE: %c",wMode->value->cstring[0]);
 	    if(wMode->value->cstring[0] == 'm') aInfo.clockStyle = MINUTES; 
 	  	else aInfo.clockStyle = SECONDS;
 	
@@ -591,22 +461,22 @@ void in_received_handler(DictionaryIterator *received, void *context) {
 		if(blue->value->cstring[0] == 'y') aInfo.bluetooth = YES; 
 	  	else aInfo.bluetooth = NO;
 	
-	    if(bluea->value->cstring[0] == 'y') aInfo.alarm = YES; 
-	  	else aInfo.alarm = NO;
+ 	    if(bluea->value->cstring[0] == 'y') aInfo.alarm = YES; 
+ 	  	else aInfo.alarm = NO;
 	
 	    if(bat->value->cstring[0] == 'y') aInfo.battery = YES; 
-	  	else aInfo.battery = NO;
+ 	  	else aInfo.battery = NO;
 	
-		if(brk->value->cstring[0] == 'y') aInfo.break_mode = YES; 
-	  	else aInfo.break_mode = NO;
+ 		if(brk->value->cstring[0] == 'y') aInfo.break_mode = YES; 
+ 	  	else aInfo.break_mode = NO;
 	    
       strcpy(aInfo.backColor,backcolor->value->cstring);
-      strcpy(aInfo.dateColor,dcolor->value->cstring);
-	  strcpy(aInfo.lineColor,lcolor->value->cstring);
-      strcpy(aInfo.timeColor,tcolor->value->cstring);
-      strcpy(aInfo.batColor,batcolor->value->cstring);
-      strcpy(aInfo.blueColor,bluecolor->value->cstring);
-      strcpy(aInfo.periodColor,periodcolor->value->cstring);
+       strcpy(aInfo.dateColor,dcolor->value->cstring);
+ 	  strcpy(aInfo.lineColor,lcolor->value->cstring);
+       strcpy(aInfo.timeColor,tcolor->value->cstring);
+       strcpy(aInfo.batColor,batcolor->value->cstring);
+       strcpy(aInfo.blueColor,bluecolor->value->cstring);
+       strcpy(aInfo.periodColor,periodcolor->value->cstring);
 	
 	
 	updateColors();
@@ -618,7 +488,8 @@ void in_received_handler(DictionaryIterator *received, void *context) {
 void readConfig() {
 	if(persist_exists(34)){
 		persist_read_data(34,&aInfo,sizeof(aInfo));
-		updateSchoolMode();
+	  updateSchoolMode();
+	  
 	}else{
 		aInfo.bluetooth = YES;
 		aInfo.battery = YES;
@@ -633,7 +504,9 @@ void readConfig() {
 		#else
 		aInfo.textColor = WHITE;
 		#endif
+
 	}
+
 	
 	if(persist_exists(35)){
         persist_read_data(35,cNames,sizeof(cNames));
@@ -670,6 +543,20 @@ void handle_deinit(void) {
     
 }
 
+
+
+// Set the color for drawing routines 
+static void set_color(GContext *ctx, GColor color) {
+  graphics_context_set_fill_color(ctx, color);
+}
+
+// Update the watchface display
+static void update_display(Layer *layer, GContext *ctx) {
+  #ifdef PBL_ROUND
+  set_color(ctx, GColorFromHEX(findColor(aInfo.timeColor)));
+  draw_seconds(ctx, seconds, layer);
+  #endif
+}    
 
 // Initial Init handler 
 void handle_init(void) {
@@ -720,11 +607,12 @@ void handle_init(void) {
     RESOURCE_ID_FONT_ROBOTO_CONDENSED_SUBSET_19)));
     layer_add_child(window_layer, text_layer_get_layer(text_time_period_info));
     //Battery
-    text_battery_info = text_layer_create(GRect(70, -100, 144 - 7, 90));
+    text_battery_info = text_layer_create(GRect(70, -1000, 144 - 7, 90));
     text_layer_set_text_color(text_battery_info, GColorBlack);
     text_layer_set_background_color(text_battery_info, GColorClear);
     text_layer_set_font(text_battery_info,
     fonts_get_system_font(FONT_KEY_GOTHIC_18));
+	text_layer_set_text(text_battery_info, " ");
     layer_add_child(window_layer, text_layer_get_layer(text_battery_info));
     
     //BLUETOOTH
@@ -734,6 +622,7 @@ void handle_init(void) {
     text_layer_set_font(text_bluetooth_info,
     fonts_get_system_font(FONT_KEY_GOTHIC_18));
   //  layer_add_child(window_layer, text_layer_get_layer(text_bluetooth_info));
+	
     
     GRect top_line_frame = GRect(200, 76, 180, 2);
     GRect bottom_line_frame = GRect(-200, 108, 180, 2);
@@ -745,7 +634,7 @@ void handle_init(void) {
     layer_add_child(window_layer, bottom_line_layer);
 	//BITMAP START  RESOURCE_ID_IMAGE_BLUE_ON
 	bluetooth_on_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_CONNECTED_BLACK);//
-	bluetooth_on_layer = bitmap_layer_create(GRect(-10, -10, 48, 48));
+	bluetooth_on_layer = bitmap_layer_create(GRect(-100, -100, 48, 48));
 	#ifdef PBL_COLOR
 		  bitmap_layer_set_compositing_mode(bluetooth_on_layer, GCompOpSet);
 	#else
@@ -757,7 +646,11 @@ layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(bluetooth_
     updateColors();
 	updateBatBlue();
 	updateClock();
+  #ifdef PBL_RECT
 	boot_animation();
+  #elif PBL_ROUND
+  round_boot_animation();
+  #endif
     if (aInfo.clockStyle == MINUTES){
         tick_timer_service_unsubscribe();
         tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
@@ -766,6 +659,15 @@ layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(bluetooth_
         tick_timer_service_unsubscribe();
         tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
     }
+  
+  
+  #ifdef PBL_ROUND
+  s_layer = layer_create(layer_get_bounds(window_get_root_layer(window)));
+  layer_add_child(window_get_root_layer(window), s_layer);
+  layer_set_update_proc(s_layer, update_display);
+  #endif
+	
+
 }
 
 //Main
