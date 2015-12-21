@@ -49,7 +49,7 @@ void show_rect(){
 	 layer_set_frame(top_line_layer, GRect(0, 76, 180, 2));
 	 layer_set_frame(bottom_line_layer, GRect(0, 108, 180, 2));
 	 layer_set_frame(text_layer_get_layer(text_bluetooth_info), GRect(130, 0, 144 - 7, 90));
-	 layer_set_frame(text_layer_get_layer(text_battery_info), GRect(0, 0, 144 - 7, 90));
+	 layer_set_frame(text_layer_get_layer(text_battery_info), GRect(2, 0, 144 - 7, 90));
 
 }
 
@@ -136,8 +136,8 @@ void boot_animation(){
     GRect bluetoothFinish =GRect(130, 0, 144 - 7, 90);
     animate_layer(text_layer_get_layer(text_bluetooth_info), &bluetoothStart, &bluetoothFinish, 1400, 10);
 	
-    GRect batteryStart = GRect(0, -100, 144 - 7, 90);
-    GRect batteryFinish =GRect(0, 0, 144 - 7, 90);
+    GRect batteryStart = GRect(2, -100, 144 - 7, 90);
+    GRect batteryFinish =GRect(2, 0, 144 - 7, 90);
     animate_layer(text_layer_get_layer(text_battery_info), &batteryStart, &batteryFinish, 1400, 10);
 }
 
