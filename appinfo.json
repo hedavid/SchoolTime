@@ -1,30 +1,30 @@
 {
     "appKeys": {
         "aInfo": 34,
-        "backcolor": 46,
-        "bat": 33,
-        "batcolor": 44,
-        "blue": 32,
-        "bluea": 36,
-        "bluecolor": 45,
+        "background_color": 46,
+        "battery_color": 44,
+        "bluetooth_alarm": 36,
+        "bluetooth_color": 45,
+        "boot_animation": 37,
         "breakmode": 49,
-        "c1N": 21,
-        "c2N": 22,
-        "c3N": 23,
-        "c4N": 24,
-        "c5N": 25,
-        "c6N": 26,
-        "c7N": 27,
-        "c8N": 28,
         "classNames": 35,
-        "dcolor": 41,
-        "lcolor": 42,
-        "periodcolor": 47,
-        "sday": 29,
-        "tcolor": 43,
+        "class_1": 21,
+        "class_2": 22,
+        "class_3": 23,
+        "class_4": 24,
+        "class_5": 25,
+        "class_6": 26,
+        "class_7": 27,
+        "class_8": 28,
+        "clock_style": 30,
+        "date_color": 41,
+        "lines_color": 42,
+        "period_color": 47,
+        "school_day": 29,
+        "show_battery": 33,
+        "show_bluetooth": 32,
         "tcolorc": 48,
-        "watch": 40,
-        "wmode": 30
+        "time_color": 43
     },
     "capabilities": [
         "configurable"
@@ -35,40 +35,29 @@
     "resources": {
         "media": [
             {
-                "file": "images/phone_white.png",
-                "name": "IMAGE_PHONE_WHITE",
-                "type": "png"
+                "file": "fonts/Roboto-BoldCondensed.ttf",
+                "name": "FONT_ROBOTO_CONDENSED_SUBSET_17",
+                "targetPlatforms": null,
+                "type": "font"
             },
             {
-                "file": "images/phone_black.png",
-                "name": "IMAGE_PHONE_BLACK",
-                "type": "png"
+                "characterRegex": "[0-9:.]",
+                "file": "fonts/Roboto-BoldCondensed.ttf",
+                "name": "FONT_ROBOTO_CONDENSED_SUBSET_36",
+                "targetPlatforms": null,
+                "type": "font"
             },
             {
-                "file": "images/notconnectedwhite.png",
-                "name": "IMAGE_NOT_CONNECTED_WHITE",
-                "type": "png"
+                "file": "fonts/Roboto-BoldCondensed.ttf",
+                "name": "FONT_ROBOTO_CONDENSED_SUBSET_19",
+                "targetPlatforms": null,
+                "type": "font"
             },
             {
-                "file": "images/notconnectedblack.png",
-                "name": "IMAGE_NOT_CONNECTED_BLACK",
-                "type": "png"
-            },
-            {
-                "file": "images/connectedwhite.png",
-                "name": "IMAGE_CONNECTED_WHITE",
-                "type": "png"
-            },
-            {
-                "file": "images/connectedblack.png",
-                "name": "IMAGE_CONNECTED_BLACK",
-                "type": "png"
-            },
-            {
-                "file": "images/schoolicon.png",
-                "menuIcon": true,
-                "name": "IMAGE_MENU_ICON",
-                "type": "png"
+                "file": "fonts/Roboto-BoldCondensed.ttf",
+                "name": "FONT_ROBOTO_CONDENSED_SUBSET_16",
+                "targetPlatforms": null,
+                "type": "font"
             },
             {
                 "file": "fonts/RobotoCondensed-Regular.ttf",
@@ -76,19 +65,10 @@
                 "type": "font"
             },
             {
-                "file": "fonts/Roboto-BoldCondensed.ttf",
-                "name": "FONT_ROBOTO_CONDENSED_SUBSET_19",
-                "type": "font"
-            },
-            {
-                "file": "fonts/Roboto-BoldCondensed.ttf",
-                "name": "FONT_ROBOTO_CONDENSED_SUBSET_36",
-                "type": "font"
-            },
-            {
-                "file": "fonts/Roboto-BoldCondensed.ttf",
-                "name": "FONT_ROBOTO_CONDENSED_SUBSET_17",
-                "type": "font"
+                "file": "images/schoolicon.png",
+                "menuIcon": true,
+                "name": "IMAGE_MENU_ICON",
+                "type": "png"
             }
         ]
     },
@@ -100,7 +80,7 @@
         "chalk"
     ],
     "uuid": "0e99df4c-5a8f-44f3-bdfa-31a8bc14139f",
-    "versionLabel": "5.2",
+    "versionLabel": "6.0",
     "watchapp": {
         "watchface": true
     }
