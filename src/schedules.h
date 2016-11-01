@@ -33,20 +33,20 @@ The structs below are in the following format.
 **Period Names are set in the app configuration page. 
 */
 struct periodInfo normalInfo[] = { 
-  {1, TIME(7,45),  TIME(8,30)},
-	{2, TIME(8,35),  TIME(9,20)},
-	{3, TIME(9,25),  TIME(10,10)},
-	{4, TIME(10,15),  TIME(11,05)},
-	{5, TIME(11,10),  TIME(12,00)},
-	{6, TIME(12,05),  TIME(12,50)},
-	{7, TIME(12,55), TIME(13,40)},
-	{8, TIME(13,45), TIME(14,30)}
+  {1, TIME(7,50),  TIME(8,35)},
+	{2, TIME(8,45),  TIME(9,30)},
+	{3, TIME(9,50),  TIME(10,35)},
+	{4, TIME(10,45),  TIME(11,30)},
+	{5, TIME(11,55),  TIME(12,40)},
+	{6, TIME(12,45),  TIME(13,30)},
+	{7, TIME(13,50), TIME(14,35)},
+	{8, TIME(14,40), TIME(15,25)}
 };
 #define INFO_SIZE (sizeof(normalInfo)/sizeof(struct periodInfo))
 	
 
-#define NORMAL_START TIME(7,45)//Enter Normal Day Start Time
-#define NORMAL_END   TIME(14,30)//Enter Normal Day End Time
+#define NORMAL_START TIME(7,50)//Enter Normal Day Start Time
+#define NORMAL_END   TIME(15,25)//Enter Normal Day End Time
 
 	
 //The Delay info and early release info follow the same format as what was stated above. 
@@ -62,20 +62,20 @@ struct periodInfo delayInfo[] = {
 	{8, TIME(14,00), TIME(14,30)}
 };
 #define DELAY_START  TIME(9,45)//Enter Delay Day Start Time
-#define DELAY_END    TIME(14,30) //Enter Delay Day Start Time
+#define DELAY_END    TIME(14,30) //Enter Delay Day End Time
 
 struct periodInfo earlyRelInfo[] = {
-	{1, TIME(7,45),  TIME(8,10)},
-	{2, TIME(8,15),  TIME(8,40)},
-	{3, TIME(8,45),  TIME(9,10)},
-	{4, TIME(9,15),  TIME(9,40)},
-	{6, TIME(9,45),  TIME(10,10)},
-	{7, TIME(10,15),  TIME(10,40)},
-	{8, TIME(10,45), TIME(11,10)},
-	{5, TIME(11,15), TIME(11,50)}
+	{1, TIME(7,50),  TIME(8,20)},
+	{2, TIME(8,30),  TIME(9,00)},
+	{3, TIME(9,20),  TIME(9,50)},
+	{4, TIME(10,00),  TIME(10,30)},
+	{6, TIME(10,50),  TIME(11,20)},
+	{7, TIME(11,30),  TIME(12,00)},
+	{8, TIME(12,25), TIME(12,55)},
+	{5, TIME(13,05), TIME(13,35)}
 };
-#define EARLY_REL_START TIME(7,45) //Enter Early Release Day Start Time
-#define EARLY_REL_END   TIME(11,50) //Enter Early Release Day Start Time
+#define EARLY_REL_START TIME(7,50) //Enter Early Release Day Start Time
+#define EARLY_REL_END   TIME(13,35) //Enter Early Release Day End Time
 
 struct periodInfo *pinfo = normalInfo;
 static int school_start = NORMAL_START;
